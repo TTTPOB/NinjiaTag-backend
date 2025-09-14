@@ -36,7 +36,9 @@ def decode_tag(data):
 
 
 def getAuth(regenerate=False, second_factor='sms'):
-    CONFIG_PATH = os.path.dirname(os.path.realpath(__file__)) + "/auth.json"
+    data_dir = os.environ.get('DATA_DIR', os.path.dirname(os.path.realpath(__file__)))
+    os.makedirs(data_dir, exist_ok=True)
+    CONFIG_PATH = os.path.join(data_dir, "auth.json")
     if os.path.exists(CONFIG_PATH) and not regenerate:
         with open(CONFIG_PATH, "r") as f:
             j = json.load(f)
@@ -84,7 +86,9 @@ async def fetch_report(session, semaphore, id, auth, headers, startdate, unixEpo
 async def main_async(args, privkeys, names):
     """异步主函数"""
     # 初始化数据库 - 确保文件存在和表结构正确
-    db_path = os.path.dirname(os.path.realpath(__file__)) + '/reports.db'
+    data_dir = os.environ.get('DATA_DIR', os.path.dirname(os.path.realpath(__file__)))
+    os.makedirs(data_dir, exist_ok=True)
+    db_path = os.path.join(data_dir, 'reports.db')
 
     # 创建数据库文件（如果不存在）
     sq3db = sqlite3.connect(db_path)
@@ -230,7 +234,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Connect to the database
-    db_path = os.path.dirname(os.path.realpath(__file__)) + '/reports.db'
+    data_dir = os.environ.get('DATA_DIR', os.path.dirname(os.path.realpath(__file__)))
+    os.makedirs(data_dir, exist_ok=True)
+    db_path = os.path.join(data_dir, 'reports.db')
     sq3db = sqlite3.connect(db_path)
     sq3 = sq3db.cursor()
 
@@ -248,7 +254,8 @@ if __name__ == "__main__":
     privkeys = {}
     names = {}
     # 递归 glob.glob 调用取出目录下所有keys
-    keyfiles_pattern = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'keys', '**', args.prefix + '*.keys')
+    keys_root = os.environ.get('KEYS_DIR', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'keys'))
+    keyfiles_pattern = os.path.join(keys_root, '**', args.prefix + '*.keys')
     keyfiles = glob.glob(keyfiles_pattern, recursive=True)
     for keyfile in keyfiles:
         with open(keyfile) as f:

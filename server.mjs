@@ -3,6 +3,7 @@ import sqlite3 from 'sqlite3';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit'; // Importing express-rate-limit
+import path from 'path';
 
 
 const app = express();
@@ -62,11 +63,18 @@ const limiter = rateLimit({
 app.use(cors());
 app.use(bodyParser.json());
 
-const db = new sqlite3.Database('./reports.db', (err) => {
+// health endpoint for container healthchecks
+app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
+
+const dataDir = process.env.DATA_DIR || '.';
+const dbPath = path.join(dataDir, 'reports.db');
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Could not connect to database', err);
     } else {
-        console.log('Connected to SQLite database');
+        console.log('Connected to SQLite database', dbPath);
     }
 });
 

@@ -4,6 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start": "node app.mjs",
+    "login": "node cli.mjs login",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
