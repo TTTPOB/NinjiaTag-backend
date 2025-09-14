@@ -92,10 +92,8 @@ def _redact_body(data):
                 lk = str(k).lower()
                 if lk in _SENSITIVE_BODY_KEYS:
                     red[k] = REDACTED
-                elif isinstance(v, (dict, list)):
-                    red[k] = _redact_body(v)
                 else:
-                    red[k] = v
+                    red[k] = _redact_body(v)
             return red
         if isinstance(data, list):
             return [_redact_body(x) for x in data]
