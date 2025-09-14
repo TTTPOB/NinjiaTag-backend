@@ -458,16 +458,27 @@ def sms_second_factor(dsid, idms_token):
     # We don't care about the response, it's just some HTML with a form for entering the code
     # Easier to just use a text prompt
     if DEBUG_HTTP:
-        _debug('HTTP PUT https://gsa.apple.com/auth/verify/phone/')
+        _debug('HTTP POST https://gsa.apple.com/auth/verify/phone/')
         _debug('  headers: %s', json.dumps(_redact_headers(headers), ensure_ascii=False))
         _debug('  body: %s', json.dumps(_redact_body(body), ensure_ascii=False))
-    t = requests.put(
+    t = requests.post(
         "https://gsa.apple.com/auth/verify/phone/",
         json=body,
         headers=headers,
         verify=False,
         timeout=5
     )
+    if t.status_code == 404:
+        # Some deployments require no trailing slash
+        if DEBUG_HTTP:
+            _debug('Retrying without trailing slash...')
+        t = requests.post(
+            "https://gsa.apple.com/auth/verify/phone",
+            json=body,
+            headers=headers,
+            verify=False,
+            timeout=5
+        )
     if DEBUG_HTTP:
         _debug('  -> %s %s', t.status_code, t.reason)
         _debug('  resp headers: %s', json.dumps(dict(t.headers), ensure_ascii=False))
