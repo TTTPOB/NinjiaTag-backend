@@ -4,14 +4,18 @@ FROM node:22-bookworm
 # Set workdir
 WORKDIR /app
 
-# Install Python and build toolchain for sqlite3
+# Install Python and venv support
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 python3-pip ca-certificates \
+    && apt-get install -y --no-install-recommends python3 python3-venv python3-pip ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Python deps used by request_reports.py and pypush_gsa_icloud.py
-RUN python3 -m pip install --no-cache-dir \
-    aiohttp requests cryptography pycryptodome srp pbkdf2
+# Create isolated Python virtual environment and install deps
+RUN python3 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --no-cache-dir \
+       aiohttp requests cryptography pycryptodome srp pbkdf2
+
+# Ensure venv Python is preferred for all subsequent commands
+ENV PATH=/opt/venv/bin:$PATH
 
 # Copy package manifests and install Node deps
 COPY package*.json ./
@@ -38,4 +42,3 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 # Default: run combined server + scheduler. Also supports `login` subcommand.
 ENTRYPOINT ["node", "cli.mjs"]
 CMD ["run"]
-
